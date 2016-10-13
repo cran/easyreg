@@ -1,0 +1,10 @@
+exportPattern("^[[:alpha:]]+")
+import(nlme)
+import(car)
+importFrom("graphics", "abline", "axis", "curve", "matplot", "plot",
+             "text")
+importFrom("stats", "AIC", "BIC", "anova", "coef", "contr.sum",
+             "deviance", "df.residual", "fitted", "lm", "median",
+             "na.omit", "nls", "nls.control", "poly", "resid", "sd",
+             "shapiro.test", "var")
+importFrom("utils", "combn")
