@@ -1,32 +1,44 @@
 
 regplot <-
-function(data, model=1, start=c(a=1,b=1,c=1,d=1,e=1), xlab="Explanatory Variable", ylab="Response Variable", position=1, digits=6, mean=TRUE, legend=TRUE)
+function(data, model=1, start=c(a=1,b=1,c=1,d=1,e=1), xlab="Explanatory Variable", ylab="Response Variable", position=1, digits=6, mean=TRUE, sd=FALSE, legend = TRUE, lty=2, col="dark blue", pch=20,xlim="defalt.x",ylim="defalt.y",...)
+
 {
-    mei=mean
+mei=mean
+li=legend
+lty=lty
+col=col
+pch=pch
+sdd=sd
+
+	minx = min(data[, 1], na.rm=TRUE) - sd(data[, 1],na.rm=TRUE)/2
+        maxx = max(data[, 1],na.rm=TRUE) + sd(data[, 1],na.rm=TRUE)/2
+        miny = min(data[, 2],na.rm=TRUE) - sd(data[, 2],na.rm=TRUE)/2
+        maxy = max(data[, 2],na.rm=TRUE) + sd(data[, 2],na.rm=TRUE)/2
+        
+
+xli=ifelse(xlim=="defalt.x",1,2)
+xli=xli[1]
+xll=list(c(minx,maxx),xlim)
+xl=xll[[xli]]
+
+yli=ifelse(ylim=="defalt.y",1,2)
+yli=yli[1]
+yll=list(c(miny,maxy),ylim)
+yl=yll[[yli]]
+
+
+
     rest=er1(data=data, model=model, start=c(a=start[1],b=start[2],c=start[3],d=start[4],e=start[5]), digits=digits)
     
     res=rest[[1]][[1]]
-    means = function(data) {
-        t = as.factor(data[, 1])
-        d = data.frame(t, data[, -1])
-        s = split(data.frame(d[, -1]), d$t)
-        r = lapply(s, colMeans, na.rm = TRUE)
-        r = lapply(r, round, 2)
-        rr = t(data.frame(r))
-        rr = data.frame(rr)
-        rownames(rr) = NULL
-        treat = levels(t)
-        rr = data.frame(treat, rr)
-        colnames(rr) = colnames(data)
-        return(rr)
-    }
+
+    
     
     t = list("top", "bottomright", "bottom", "bottomleft", 
              "left", "topleft", "topright", "right", "center")
     p = t[[position]]
     
-    datao=means(data)
-    
+        
 iii=1:(ncol(data)-1)
 fr=function(iii){
 res2=rest[[iii]][[1]];return(res2)}
@@ -88,11 +100,8 @@ res=data.frame(lr);names(res)=colnames(data)[-1]
         ff13=function(se)  (res[1,i]/(1+exp(2-4*res[3,i]*(se-res[5,i]))))+(res[2,i]/(1+exp(2-4*res[4,i]*(se-res[5,i]))))
         mod2=list(ff1,ff2,ff3,ff4,ff5,ff6,ff7,ff8,ff9,ff10,ff11,ff12,ff13)
         i=1:(ncol(data)-1)
-        minx = min(data[, 1], na.rm=TRUE) - sd(data[, 1],na.rm=TRUE)/2
-        maxx = max(data[, 1],na.rm=TRUE) + sd(data[, 1],na.rm=TRUE)/2
-        miny = min(data[, 2],na.rm=TRUE) - sd(data[, 2],na.rm=TRUE)/2
-        maxy = max(data[, 2],na.rm=TRUE) + sd(data[, 2],na.rm=TRUE)/2
         
+
         c1=res[1,];c2=res[2,];c3=res[3,];c4=res[4,];c5=res[5,]
 
 	cc1=c1-c3*c4; cc1=round(cc1,digits)
@@ -147,30 +156,91 @@ res=data.frame(lr);names(res)=colnames(data)[-1]
         
         eee=ee[[model]]
 
+    means = function(data) {
+        t = as.factor(data[, 1])
+        d = data.frame(t, data[, -1])
+        s = split(data.frame(d[, -1]), d$t)
+        r = lapply(s, colMeans, na.rm = TRUE)
+        r = lapply(r, round, 2)
+	fg=function(i){ss=s[[i]][,1]; return(ss)}
+	i=1:nlevels(t)
+	r2=lapply(i, fg)
+	r2 = lapply(r2, sd, na.rm = TRUE)
+	r2=unlist(r2)
+        rr = t(data.frame(r))
+        rr = data.frame(rr)
+        rownames(rr) = NULL
+        treat = levels(t)
+        rr = data.frame(treat, rr, r2)
+        colnames(rr) = c("x","y","sd" )
+        return(rr)
+    }
+
+	
+
+datao=means(data)
 	dataoi=ifelse(mei==TRUE,1,2)
 	ldi=list(datao,data)
 	datao=ldi[[dataoi]]
         
 fp1=function(datao){
         plot(datao[,2]~as.numeric(as.character(datao[,1])), data=datao, xlab = xlab, 
-             ylab = ylab, col="dark red", bty="n",xlim = c(minx, 
-                                                           maxx), ylim = c(miny, maxy))
+             ylab = ylab, bty="n",pch=pch,xlim=xl,ylim=yl,...)
         plot(mod2[[model]], min(data[,1]), max(data[,1]), add = TRUE, 
-             col = "dark blue", lty = 2)
+             lty=lty, col=col,...)
+arrows(as.numeric(as.character(datao[, 1])),datao[, 2]-datao[, 3],as.numeric(as.character(datao[, 1])),datao[, 2]+datao[, 3], code=3,length=0.04, angle=90)
         legend(p,legend=eee,bty = "n", cex=0.8)
 }
 
 fp2=function(datao){
 plot(datao[,2]~as.numeric(as.character(datao[,1])), data=datao, xlab = xlab, 
-             ylab = ylab, col="dark red", bty="n",xlim = c(minx, 
-                                                           maxx), ylim = c(miny, maxy))
+             ylab = ylab, bty="n",pch=pch,xlim=xl,ylim=yl,...)
         plot(mod2[[model]], min(data[,1]), max(data[,1]), add = TRUE, 
-             col = "dark blue", lty = 2)
+             lty=lty, col=col,...)
+arrows(as.numeric(as.character(datao[, 1])),datao[, 2]-datao[, 3],as.numeric(as.character(datao[, 1])),datao[, 2]+datao[, 3], code=3,length=0.04, angle=90)
         }
-li=ifelse(legend==TRUE,1,2)
-ll=list(fp1,fp2)
+fp3=function(datao){
+        plot(datao[,2]~as.numeric(as.character(datao[,1])), data=datao, xlab = xlab, 
+             ylab = ylab, bty="n",pch=pch,xlim=xl,ylim=yl,...)
+        plot(mod2[[model]], min(data[,1]), max(data[,1]), add = TRUE, 
+             lty=lty, col=col,...)
+        legend(p,legend=eee,bty = "n", cex=0.8)
+}
 
+fp4=function(datao){
+plot(datao[,2]~as.numeric(as.character(datao[,1])), data=datao, xlab = xlab, 
+             ylab = ylab, bty="n", pch=pch,xlim=xl,ylim=yl,...)
+        plot(mod2[[model]], min(data[,1]), max(data[,1]), add = TRUE, 
+             lty=lty, col=col,...)
+        }
+fp11=function(datao){
+        plot(datao[,2]~as.numeric(as.character(datao[,1])), data=datao, xlab = xlab, 
+             ylab = ylab,  bty="n",pch=pch,xlim=xl,ylim=yl,...)
+        plot(mod2[[model]], min(data[,1]), max(data[,1]), add = TRUE, 
+             lty=lty, col=col,...)
+        legend(p,legend=eee,bty = "n", cex=0.8)
+}
+
+fp22=function(datao){
+plot(datao[,2]~as.numeric(as.character(datao[,1])), data=datao, xlab = xlab, 
+             ylab = ylab, bty="n",pch=pch,xlim=xl,ylim=yl,...)
+        plot(mod2[[model]], min(data[,1]), max(data[,1]), add = TRUE, 
+             lty=lty, col=col,...)
+        }
+
+
+    li = ifelse(legend == TRUE, 1, 2)
+    lisd=ifelse(sdd==TRUE,0,2)
+    li=sum(li+lisd)
+
+ll = list(fp1, fp2, fp3, fp4, fp11, fp22)
+li=ifelse(mean==TRUE, li, 5)
+le=ifelse(legend==TRUE, 1,2)
+lie=li+le
+li=ifelse(lie==7,6,li)
 ll[[li]](datao)
+
+
 return(rest)
 
     }

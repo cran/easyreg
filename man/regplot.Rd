@@ -8,9 +8,9 @@ Plot data and equation
 The function plot data and equation
 }
 \usage{
-regplot(data, model = 1, start = c(a = 1, b = 1, c = 1, d = 1, e = 1), 
-xlab = "Explanatory Variable" , ylab = "Response Variable", 
-position = 1, digits=6, mean=TRUE, legend=TRUE)
+regplot(data, model=1, start=c(a=1,b=1,c=1,d=1,e=1), xlab="Explanatory Variable", 
+ylab="Response Variable", position=1, digits=6, mean=TRUE, sd=FALSE, 
+legend = TRUE, lty=2, col="dark blue", pch=20,  xlim="defalt.x",ylim="defalt.y",...)
 }
 
 \arguments{
@@ -89,9 +89,38 @@ mean=TRUE (plot mean of data)
 mean=FALSE (plot all data)
 }
 
+\item{sd}{
+sd=FALSE (plot without standard deviation)
+sd=TRUE (plot with standard deviation)
+}
+
 \item{legend}{
 legend=TRUE (plot legend)
 legend=FALSE (not plot legend)
+}
+
+\item{lty}{
+line type
+}
+
+\item{col}{
+line color
+}
+
+\item{pch}{
+point type
+}
+
+\item{xlim}{
+limits for x
+}
+
+\item{ylim}{
+limits for y
+}
+
+\item{...}{
+others graphical parameters (see par)
 }
 
 }
@@ -122,10 +151,11 @@ data1=data.frame(age, weight)
 regplot(data1, model=1, digits=3, position=3, ylab="weight", xlab="age")
 
 # quadratic
-regplot(data1, model=2, digits=3, position=3)
+regplot(data1, model=2, digits=3, position=3, col=1, ylim=c(200,700))
 
 # linear plateau
-regplot(data1, model=3,ylab="weight", xlab="age")
+regplot(data1, model=3,ylab="weight", xlab="age", lty=5, col="dark green",
+position=3, ylim=c(200,700), xlim=c(0,150), lwd=2)
 
 # quadratic plateau
 regplot(data1, model=4,ylab="weight", xlab="age")
@@ -218,6 +248,12 @@ data=data.frame(time,t1,t2,t3)
 
 regplot(data, model=12)
 regplot(data, model=4)
+
+# include standard deviation in graph
+data(data1)
+
+regplot(data1, sd=TRUE)
+
 
 }
 

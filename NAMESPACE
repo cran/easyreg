@@ -8,3 +8,7 @@ importFrom("stats", "AIC", "BIC", "anova", "coef", "contr.sum",
              "na.omit", "nls", "nls.control", "poly", "resid", "sd",
              "shapiro.test", "var")
 importFrom("utils", "combn")
+importFrom("graphics", "arrows")
+importFrom("stats", "dnorm", "na.exclude", "pf", "pt")
+importFrom("stats", "model.matrix", "qt", "vcov")
+

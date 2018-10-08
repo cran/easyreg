@@ -1,0 +1,10 @@
+citHeader("To cite easyanova in publications, please use:")
+
+citEntry(entry="article", 
+          title = "R-environment package for regression analysis", 
+          author = personList( as.person("Emmanuel Arnhold" )), 
+          year = "2018", 
+          journal = "Pesquisa Agropecuaria Brasileira", 
+          volume = "53", 
+          issue = "7", 
+          textVersion = "ARNHOLD, E. R-environment package for regression analysis. Pesquisa Agropecuaria Brasileira, v.53, n.7, p.870-873, 2018.") 

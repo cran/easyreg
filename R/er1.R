@@ -3,6 +3,27 @@ function(data, model=1, start=c(a=1,b=1,c=1,d=1,e=1), mixed=FALSE, digits=6){
     s=start
     mixed=mixed
 
+tmodel<-function(m, data){
+i=if(class(m)=="lm") 1 else 2
+ll=list(lm(data[,2]~1),lm(y~1, data=data))
+m0=ll[[i]]
+a=anova(m,m0)
+df=c(abs(a[,3][2]),a[,1][1],a[,1][2])
+sq=c(abs(a[,4][2]),a[,2][1],a[,2][2])
+qm=sq/df
+d1=data.frame(df,sq,qm);d1=round(d1,4);
+f=qm[1]/qm[2]
+fc=c(round(f,4),"-","-")
+p=pf(f,df[1],df[2], lower.tail=FALSE)
+p=if(p<0.001) "<0.001" else p=round(p,4)
+ps=c(p,"-","-")
+source=c("regression", "residuals", "total")
+res=data.frame(d1,fc,ps)
+colnames(res)=c("df","sum of squares", "mean squares", "Fcal", "p-value")
+rownames(res)=source
+return(res)
+}
+
   opt1=function(data){
     d1 = as.data.frame(data[,1])
     d2 = as.data.frame(data[,-1])
@@ -113,7 +134,7 @@ R3mm <- function(m) {
     
     # linear
     f1=function(data){names(data) = c("x", "y") 
-                      ml = lm(data[, 2] ~ data[, 1])
+                      ml = lm(data[,2] ~ data[, 1])
                       c1 = coef(ml)[[1]]
                       c2 = coef(ml)[[2]]
                       c=coef(ml); s=summary(ml); a=c[1];b=c[2]; fr1=fr(ml); 
@@ -123,8 +144,9 @@ l=c(a,b,summary(ml)$coefficients[,4], R2(ml), R3(ml),AIC(ml), BIC(ml), fr1); l=r
                                     "p-value t.test for a", "p-value t.test for b", 
                                     "r-squared", "adjusted r-squared", 
                                     "AIC", "BIC", "p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant")
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Linear model","Residuals of linear model", "Residuals standardized of linear model") 
+tm=tmodel(ml, data)
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Linear model","Whole model test","Residuals of linear model", "Residuals standardized of linear model") 
 return(l1)
                       }
     
@@ -145,8 +167,9 @@ names(l)="estimates"
                                     "coefficient c", "p-value t.test for a", "p-value t.test for b",
                                     "p-value t.test for c", "r-squared", "adjusted r-squared", 
                                     "AIC", "BIC","maximum or minimum value for y", "critical point in x", "p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-                    l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Quadratic model","Residuals of quadratic model", "Residuals standardized of quadratic model") 
+tm=tmodel(mq, data)
+                    l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Quadratic model","Whole model test","Residuals of quadratic model", "Residuals standardized of quadratic model") 
 return(l1)
     }
     
@@ -179,8 +202,9 @@ names(l)="estimates"
                                     "coefficient c", "p-value t.test for a", "p-value t.test for b", 
                                     "p-value t.test for c", "r-squared", "adjusted r-squared", 
                                     "AIC", "BIC","maximum or minimum value for y", "critical point in x", "p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant")
-                       l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Linear plateau model","Residuals of linear plateau model", "Residuals standardized of linear plateau model") 
+tm=tmodel(m, data)
+                       l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Linear plateau model","Whole model test","Residuals of linear plateau model", "Residuals standardized of linear plateau model") 
 return(l1)
     }
     
@@ -215,9 +239,10 @@ names(l)="estimates"
                       rownames(l)=c("coefficient a", "coefficient b", 
                                     "coefficient c", "p-value t.test for a", "p-value t.test for b", 
                                     "p-value t.test for c", "r-squared", "adjusted r-squared", 
-                                    "AIC", "BIC","maximum or minimum value for y", "critical point in x", "p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-                     l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Quadratic plateau model","Residuals of quadratic plateau model", "Residuals standardized of quadratic plateau model") 
+                                    "AIC", "BIC","maximum or minimum value for y", "critical point in x", "p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant")
+tm=tmodel(m, data) 
+                     l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Quadratic plateau model","Whole model test","Residuals of quadratic plateau model", "Residuals standardized of quadratic plateau model") 
 return(l1)
     }
     
@@ -234,8 +259,9 @@ names(l)="estimates"
                                     "coefficient c","coefficient d", "p-value t.test for a", "p-value t.test for b", 
                                     "p-value t.test for c", "p-value t.test for d","r-squared", "adjusted r-squared", 
                                     "AIC", "BIC", "p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Broken line model","Residuals of broken line model", "Residuals standardized of broken line model") 
+tm=tmodel(m, data)
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Broken line model","Whole model test","Residuals of broken line model", "Residuals standardized of broken line model") 
 return(l1)
 
     }
@@ -251,8 +277,9 @@ names(l)="estimates"
                                     "p-value t.test for a", "p-value t.test for b", 
                                     "r-squared", "adjusted r-squared", 
                                     "AIC", "BIC", "p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant")
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Exponential model","Residuals of exponential model", "Residuals standardized of exponential model") 
+tm=tmodel(m, data)
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Exponential model","Whole model test","Residuals of exponential model", "Residuals standardized of exponential model") 
 return(l1)
     } 
     
@@ -267,8 +294,9 @@ names(l)="estimates"
                                     "coefficient c", "p-value t.test for a", "p-value t.test for b", 
                                     "p-value t.test for c", "r-squared", "adjusted r-squared", 
                                     "AIC", "BIC", "p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Logistic model","Residuals of logistic model", "Residuals standardized of logistic model") 
+tm=tmodel(m, data)
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Logistic model","Whole model test","Residuals of logistic model", "Residuals standardized of logistic model") 
 return(l1)
     }
     
@@ -282,9 +310,10 @@ names(l)="estimates"
                       rownames(l)=c("coefficient a", "coefficient b", 
                                     "coefficient c", "p-value t.test for a", "p-value t.test for b", 
                                     "p-value t.test for c", "r-squared", "adjusted r-squared", 
-                                    "AIC", "BIC","p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Von Bertalanffy model","Residuals of Von Bertalanffy model", "Residuals standardized of Von Bertalanffy model") 
+                                    "AIC", "BIC","p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant")
+tm=tmodel(m, data) 
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Von Bertalanffy model","Whole model test","Residuals of Von Bertalanffy model", "Residuals standardized of Von Bertalanffy model") 
 return(l1)
     }
     
@@ -299,8 +328,9 @@ names(l)="estimates"
                                     "coefficient c", "p-value t.test for a", "p-value t.test for b", 
                                     "p-value t.test for c", "r-squared", "adjusted r-squared", 
                                     "AIC", "BIC","p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Brody model","Residuals of Brody model", "Residuals standardized of Brody model") 
+tm=tmodel(m, data)
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Brody model","Whole model test","Residuals of Brody model", "Residuals standardized of Brody model") 
 return(l1)
     }
     
@@ -315,8 +345,9 @@ names(l)="estimates"
                                      "coefficient c", "p-value t.test for a", "p-value t.test for b", 
                                      "p-value t.test for c", "r-squared", "adjusted r-squared", 
                                      "AIC", "BIC", "p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Gompertz model","Residuals of Gompertz model", "Residuals standardized of Gompertz model") 
+tm=tmodel(m, data)
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Gompertz model","Whole model test","Residuals of Gompertz model", "Residuals standardized of Gompertz model") 
 return(l1)
     }
     
@@ -331,8 +362,9 @@ names(l)="estimates"
                                      "coefficient c", "p-value t.test for a", "p-value t.test for b", 
                                      "p-value t.test for c", "r-squared", "adjusted r-squared", 
                                      "AIC", "BIC","maximum or minimum value for y", "critical point in x","p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Lactation model","Residuals of lactation model", "Residuals standardized of lactation model") 
+tm=tmodel(m, data)
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Lactation model","Whole model test","Residuals of lactation model", "Residuals standardized of lactation model") 
 return(l1)
                        # a=17;b=0.25; c=0.004
     }
@@ -355,8 +387,9 @@ names(l)="estimates"
                                      "coefficient c", "p-value t.test for a", "p-value t.test for b", 
                                      "p-value t.test for c", "r-squared", "adjusted r-squared", 
                                      "AIC", "BIC","p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Ruminal degradation model","Residuals of ruminal degradation model", "Residuals standardized of ruminal degradation model") 
+tm=tmodel(m, data)
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Ruminal degradation model","Whole model test","Residuals of ruminal degradation model", "Residuals standardized of ruminal degradation model") 
 return(l1)
     }
     
@@ -376,8 +409,9 @@ names(l)="estimates"
                                      "p-value t.test for a", "p-value t.test for b", 
                                      "p-value t.test for c","p-value t.test for d","p-value t.test for e" ,"r-squared", "adjusted r-squared", 
                                      "AIC", "BIC","p.value Shapiro-Wilk test","coefficient of variation (%)", "first value most discrepant","second value most discrepant","third value most discrepant") 
-l1=list(l,as.numeric(re1),re2[,1])
-names(l1)=c("Logistic bi-compartmental model","Residuals of logistic bi-compartmental model", "Residuals standardized of logistic bi-compartmental model") 
+tm=tmodel(m, data)
+l1=list(l,tm,as.numeric(re1),re2[,1])
+names(l1)=c("Logistic bi-compartmental model","Whole model test","Residuals of logistic bi-compartmental model", "Residuals standardized of logistic bi-compartmental model") 
 return(l1)
     }
 

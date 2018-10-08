@@ -13,8 +13,8 @@ Performs analysis of regression in simple designs with quantitative treatments, 
 \tabular{ll}{
 Package: \tab easyreg\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2016-10-12\cr
+Version: \tab 2.0\cr
+Date: \tab 2018-10-07\cr
 License: \tab GPL (>= 2)\cr
 }
 }
