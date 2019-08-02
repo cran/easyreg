@@ -1,6 +1,5 @@
 exportPattern("^[[:alpha:]]+")
 import(nlme)
-import(car)
 importFrom("graphics", "abline", "axis", "curve", "matplot", "plot",
              "text")
 importFrom("stats", "AIC", "BIC", "anova", "coef", "contr.sum",
@@ -9,6 +8,6 @@ importFrom("stats", "AIC", "BIC", "anova", "coef", "contr.sum",
              "shapiro.test", "var")
 importFrom("utils", "combn")
 importFrom("graphics", "arrows")
-importFrom("stats", "dnorm", "na.exclude", "pf", "pt")
+importFrom("stats", "dnorm", "na.exclude", "pf", "pt","drop1")
 importFrom("stats", "model.matrix", "qt", "vcov")
 

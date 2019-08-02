@@ -47,6 +47,14 @@ define the model
 
 13 = "y~(a/(1+exp(2-4*c*(x-e))))+(b/(1+exp(2-4*d*(x-e))))" logistic bi-compartmental
 
+14 = "y~a*(x^b)" exponential (allometric model)
+
+15 = "y~a+b*x+c*x^2+d*x^3" cubic
+
+16 = "y~a/(1+b*(exp(-c*x)))^d" richards
+
+17 = "y~(a^d+ ((b^d)-(a^d) )*((1-exp(-c*(x-t1)))/ (1-exp(-c*(t2-t1)))))^(1/d)" schnute
+
 }  
 
 \item{start}{

@@ -21,7 +21,7 @@ second column the response variable
 }
 
  \item{model}{
-model for analysis: 1=two linear; 2=linear plateau; 3=quadratic plateau; 4=model 1 with blocks random; 5=model 2 with effect of blocks; 6=model 3 with effect of blocks  
+model for analysis: 1=two linear; 2=linear plateau (LRP); 3= model 1 with blocks random; 4 = model 2 with blocks random
 }
 
 \item{alpha}{
@@ -153,11 +153,11 @@ blocks=rep(c(1,2),8)
 
 dat=data.frame(x,blocks,y)
 
-bl(dat, 4)
+bl(dat, 3)
 
-bl(dat,5, sd=TRUE)
+bl(dat,4, sd=TRUE)
 
-bl(dat,6, mean=FALSE)
+bl(dat,4, mean=FALSE)
 
 
 }

@@ -5,7 +5,7 @@
 Analysis of polynomial regression
 }
 \description{
-The function performs analysis of polynomial regression in simple designs with quantitative treatments. This function performs analysis the lack of fit
+The function performs analysis of polynomial regression in simple designs with quantitative treatments. 
 }
 \usage{
 er2(data, design = 1, list = FALSE, type = 2)

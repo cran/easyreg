@@ -477,8 +477,143 @@ return(l2)
 
 
     }
+
+
+# exponential (allometric model)
+    f14=function(data){
+s=start
+# normal
+m1=nls(y~a*(x^b) ,start=list(a=s[1],b=s[2]),data=data,control = nls.control(maxiter = 6000)) 
+# a test
+m2=nls(y~a[treatment]*(x^b) ,start=list(a=c(s[1],s[1]),b=s[2]),data=data,control = nls.control(maxiter = 6000))
+# b test
+m3=nls(y~a*(x^b[treatment]) ,start=list(a=c(s[1]),b=c(s[2],s[2])),data=data,control = nls.control(maxiter = 6000))
+# model test
+m4=nls(y~a[treatment]*(x^b[treatment]) ,start=list(a=c(s[1],s[1]),b=c(s[2],s[2])),data=data,control = nls.control(maxiter = 6000))
+s1=summary(m1)[[10]]
+s2=summary(m2)[[10]]
+s3=summary(m3)[[10]]
+s4=summary(m4)[[10]]
+a1=anova(m1,m2)
+a2=anova(m1,m3)
+a3=anova(m1,m4)
+AIC=AIC(m1,m2,m3,m4); AIC=AIC[,-1]
+BIC=BIC(m1,m2,m3,m4); BIC=BIC[,-1]
+par=data.frame(AIC,BIC)
+rownames(par)=c("a b","a1 a2 b","a b1 b2","a1 a2 b1 b2")
+l1=list(s1,s2,s3,s4,a1,a2,a3, par)
+names(l1)=c("a b","a1 a2 b","a b1 b2","a1 a2 b1 b2","test a parameter", "test b parameter","test model", "AIC and BIC") 
+return(l1)
+    } 
+
+# cubic
+f15=function(data){     
+mq1=nls(y~a+b*x+c*x^2+d*x^3, data=data, start=c(a=1,b=1,c=1, d=1))
+# a
+mq2=nls(y~a[treatment]+b*x+c*x^2+d*x^3, data=data, start=list(a=c(1,1),b=c(1), c=c(1), d=c(1)))
+# b
+mq3=nls(y~a+b[treatment]*x+c*x^2+d*x^3, data=data, start=list(a=c(1),b=c(1,1), c=c(1), d=c(1)))
+# c
+mq4=nls(y~a+b*x+c[treatment]*x^2+d*x^3, data=data, start=list(a=c(1),b=c(1), c=c(1,1), d=c(1)))
+# d
+mq5=nls(y~a+b*x+c*x^2+d[treatment]*x^3, data=data, start=list(a=c(1),b=c(1), c=c(1), d=c(1,1)))
+# model
+mq6=nls(y~a[treatment]+b[treatment]*x+c[treatment]*x^2+d[treatment]*x^3, data=data, start=list(a=c(1,1),b=c(1,1), c=c(1,1), d=c(1,1)))
+s1q=summary(mq1)[[10]]
+s2q=summary(mq2)[[10]]
+s3q=summary(mq3)[[10]]
+s4q=summary(mq4)[[10]]
+s5q=summary(mq5)[[10]]
+s6q=summary(mq5)[[10]]
+a1q=anova(mq1,mq2)
+a2q=anova(mq1,mq3)
+a3q=anova(mq1,mq4)
+a4q=anova(mq1,mq5)
+a5q=anova(mq1,mq6)
+AIC=AIC(mq1,mq2,mq3,mq4, mq5, mq6); AIC=AIC[,-1]
+BIC=BIC(mq1,mq2,mq3,mq4, mq5, mq6); BIC=BIC[,-1]
+par=data.frame(AIC,BIC)
+rownames(par)=c("a b c d","a1 a2 b c d","a b1 b2 c d","a b c1 c2 d","a b c d1 d2","a1 a2 b1 b2 c1 c2 d1 d2")
+l2=list(s1q,s2q,s3q,s4q,s5q,s6q, a1q,a2q,a3q,a4q,a5q, par)
+names(l2)=c("a b c","a1 a2 b c","a b1 b2 c","a b c1 c2","a b c d1 d2","a1 a2 b1 b2 c1 c2","test a parameter", "test b parameter","test c parameter","test d parameter","test model", "AIC and BIC") 
+return(l2)
+    }
     
-    fun=list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13)
+
+# richards model
+    f16=function(data){   
+s=start                   
+# normal
+m1=nls(y~a/(1+b*(exp(-c*x)))^d, start=list(a=s[1],b=s[2],c=s[3], d=s[4]), data=data,control = nls.control(maxiter = 6000))
+# a test
+m2=nls(y~a[treatment]/(1+b*(exp(-c*x)))^d, start=list(a=c(s[1],s[1]),b=s[2],c=s[3], d=s[4]), data=data,control = nls.control(maxiter = 6000))
+# b test
+m3=nls(y~a/(1+b[treatment]*(exp(-c*x)))^d, start=list(a=c(s[1]),b=c(s[2],s[2]),c=s[3], d=s[4]), data=data,control = nls.control(maxiter = 6000))
+# c test
+m4=nls(y~a/(1+b*(exp(-c[treatment]*x)))^d, start=list(a=c(s[1]),b=c(s[2]),c=c(s[3],s[3]), d=s[4]), data=data,control = nls.control(maxiter = 6000))
+# d test
+m5=nls(y~a/(1+b*(exp(-c*x)))^d[treatment], start=list(a=c(s[1]),b=c(s[2]),c=c(s[3]), d=c(s[4],s[4])), data=data,control = nls.control(maxiter = 6000))
+# model test
+m6=nls(y~a[treatment]/(1+b[treatment]*(exp(-c[treatment]*x)))^d[treatment], start=list(a=c(s[1],s[1]),b=c(s[2],s[2]),c=c(s[3], s[3]), d=c(s[4],s[4])), data=data,control = nls.control(maxiter = 6000))
+s1=summary(m1)[[10]]
+s2=summary(m2)[[10]]
+s3=summary(m3)[[10]]
+s4=summary(m4)[[10]]
+s5=summary(m5)[[10]]
+s6=summary(m6)[[10]]
+a1=anova(m1,m2)
+a2=anova(m1,m3)
+a3=anova(m1,m4)
+a4=anova(m1,m5)
+a5=anova(m1,m6)
+AIC=AIC(m1,m2,m3,m4, m5,m6); AIC=AIC[,-1]
+BIC=BIC(m1,m2,m3,m4, m5,m6); BIC=BIC[,-1]
+par=data.frame(AIC,BIC)
+rownames(par)=c("a b c d","a1 a2 b c d","a b1 b2 c d","a b c1 c2 d","a b c d1 d2","a1 a2 b1 b2 c1 c2 d1 d2")
+l2=list(s1,s2,s3,s4,s5,s6, a1,a2,a3,a4,a5, par)
+names(l2)=c("a b c d","a1 a2 b c d","a b1 b2 c d","a b c1 c2 d","a b c d1 d2","a1 a2 b1 b2 c1 c2 d1 d2","test a parameter", "test b parameter","test c parameter","test d parameter","test model", "AIC and BIC") 
+return(l2)
+    }
+
+# schnute model
+    f17=function(data){   
+s=start  
+t1=min(data[,2],na.rm = TRUE)
+t2=max(data[,2],na.rm = TRUE)                 
+# normal
+m1=nls(y~(a^d+ ((b^d)-(a^d) )*((1-exp(-c*(x-t1)))/ (1-exp(-c*(t2-t1)))))^(1/d), start=list(a=s[1],b=s[2],c=s[3], d=s[4]), data=data,control = nls.control(maxiter = 6000))
+# a test
+m2=nls(y~(a[treatment]^d+ ((b^d)-(a[treatment]^d) )*((1-exp(-c*(x-t1)))/ (1-exp(-c*(t2-t1)))))^(1/d), start=list(a=c(s[1],s[1]),b=s[2],c=s[3], d=s[4]), data=data,control = nls.control(maxiter = 6000))
+# b test
+m3=nls(y~(a^d+ ((b[treatment]^d)-(a^d) )*((1-exp(-c*(x-t1)))/ (1-exp(-c*(t2-t1)))))^(1/d), start=list(a=c(s[1]),b=c(s[2],s[2]),c=s[3], d=s[4]), data=data,control = nls.control(maxiter = 6000))
+# c test
+m4=nls(y~(a^d+ ((b^d)-(a^d) )*((1-exp(-c[treatment]*(x-t1)))/ (1-exp(-c[treatment]*(t2-t1)))))^(1/d), start=list(a=c(s[1]),b=c(s[2]),c=c(s[3],s[3]), d=s[4]), data=data,control = nls.control(maxiter = 6000))
+# d test
+m5=nls(y~(a^d[treatment]+ ((b^d[treatment])-(a^d[treatment]) )*((1-exp(-c*(x-t1)))/ (1-exp(-c*(t2-t1)))))^(1/d[treatment]), start=list(a=c(s[1]),b=c(s[2]),c=c(s[3]), d=c(s[4],s[4])), data=data,control = nls.control(maxiter = 6000))
+# model test
+m6=nls(y~(a[treatment]^d[treatment]+ ((b[treatment]^d[treatment])-(a[treatment]^d[treatment]) )*((1-exp(-c[treatment]*(x-t1)))/ (1-exp(-c[treatment]*(t2-t1)))))^(1/d[treatment]), start=list(a=c(s[1],s[1]),b=c(s[2],s[2]),c=c(s[3], s[3]), d=c(s[4],s[4])), data=data,control = nls.control(maxiter = 6000))
+s1=summary(m1)[[10]]
+s2=summary(m2)[[10]]
+s3=summary(m3)[[10]]
+s4=summary(m4)[[10]]
+s5=summary(m5)[[10]]
+s6=summary(m6)[[10]]
+a1=anova(m1,m2)
+a2=anova(m1,m3)
+a3=anova(m1,m4)
+a4=anova(m1,m5)
+a5=anova(m1,m6)
+AIC=AIC(m1,m2,m3,m4, m5,m6); AIC=AIC[,-1]
+BIC=BIC(m1,m2,m3,m4, m5,m6); BIC=BIC[,-1]
+par=data.frame(AIC,BIC)
+rownames(par)=c("a b c d","a1 a2 b c d","a b1 b2 c d","a b c1 c2 d","a b c d1 d2","a1 a2 b1 b2 c1 c2 d1 d2")
+l2=list(s1,s2,s3,s4,s5,s6, a1,a2,a3,a4,a5, par)
+names(l2)=c("a b c d","a1 a2 b c d","a b1 b2 c d","a b c1 c2 d","a b c d1 d2","a1 a2 b1 b2 c1 c2 d1 d2","test a parameter", "test b parameter","test c parameter","test d parameter","test model", "AIC and BIC") 
+return(l2)
+    }
+
+ 
+    fun=list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17)
     
     fu=fun[[model]]
     r1=lapply(r2, fu)

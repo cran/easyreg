@@ -48,6 +48,14 @@ define the model
 
 13 = "y~(a/(1+exp(2-4*c*(x-e))))+(b/(1+exp(2-4*d*(x-e))))" logistic bi-compartmental
 
+14 = "y~a*(x^b)" exponential (allometric model)
+
+15 = "y~a+b*x+c*x^2+d*x^3" cubic
+
+16 = "y~a/(1+b*(exp(-c*x)))^d" richards
+
+17 = "y~(a^d+ ((b^d)-(a^d) )*((1-exp(-c*(x-t1)))/ (1-exp(-c*(t2-t1)))))^(1/d)" schnute
+
 }
   \item{start}{
 start (iterations) values of model
@@ -129,6 +137,9 @@ others graphical parameters (see par)
 \references{
 KAPS, M. and LAMBERSON, W. R. Biostatistics for Animal Science: an introductory text. 
 2nd Edition. CABI Publishing, Wallingford, Oxfordshire, UK, 2009. 504p.
+
+TERRANCE J. QUINN II and RICHARD B. DERISO. Quantitative Fish Dynamics,
+New York, Oxford, Oxford University Press, 1999. 
 }
 \author{
 Emmanuel Arnhold <emmanuelarnhold@yahoo.com.br>
@@ -177,6 +188,15 @@ regplot(data1, model=9, start=c(600,4,0.05))
 
 # gompertz
 regplot(data1, model=10, start=c(600,4,0.05))
+
+# richards
+regplot(data1, model=16, start=c(600,2,0.05,1.4))
+
+# allometric
+regplot(data1, model=14)
+
+# cubic
+regplot(data1, model=15)
 
 
 
@@ -253,6 +273,22 @@ regplot(data, model=4)
 data(data1)
 
 regplot(data1, sd=TRUE)
+
+# Schnute model
+#pacific halibut weight-age data of females (Terrance and Richard, 1999)
+ 
+age=c(4,5,6,7,8,9,10,11,12,13,14,15,16,17,
+18,19,20,21,22,23,24,28)
+weight=c(1.7,2,3.9, 4.2,6.4,7.6,10.9,14.9,18.2,21.6,25.4,28.8,
+30.9,	35.6,37.9,34.7,44.8,52.6,49.1,56.7,58.6,54.1)
+
+halibut=data.frame(age,weight)
+
+
+t1=min(halibut[,2])
+t2=max(halibut[,2])
+
+regplot(halibut,model=17,start=c(t1,t2,0.22,-0.63), ylim=c(0,100))
 
 
 }

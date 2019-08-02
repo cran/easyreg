@@ -14,7 +14,9 @@ sdd=sd
         maxx = max(data[, 1],na.rm=TRUE) + sd(data[, 1],na.rm=TRUE)/2
         miny = min(data[, 2],na.rm=TRUE) - sd(data[, 2],na.rm=TRUE)/2
         maxy = max(data[, 2],na.rm=TRUE) + sd(data[, 2],na.rm=TRUE)/2
-        
+      
+t1=min(data[,2], na.rm=TRUE)
+t2=max(data[,2], na.rm=TRUE)  
 
 xli=ifelse(xlim=="defalt.x",1,2)
 xli=xli[1]
@@ -62,8 +64,11 @@ res=data.frame(lr);names(res)=colnames(data)[-1]
         f11=function(i)(res[1,i]*se^res[2,i])*exp(-res[3,i]*se)
         f12=function(i)res[1,i] + res[2,i] * (1 - exp(-res[3,i] * se))
         f13=function(i)(res[1,i]/(1+exp(2-4*res[3,i]*(se-res[5,i]))))+(res[2,i]/(1+exp(2-4*res[4,i]*(se-res[5,i]))))
-        
-        mod=list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13)
+        f14=function(i)res[1,i]*(se^res[2,i])
+ 	f15=function(i)res[1,i]+res[2,i]*se+res[3,i]*se^2+res[4,i]*se^3
+	f16=function(i)res[1,i]/(1+res[2,i]*(exp(-res[3,i]*se)))^res[4,i]
+	f17=function(i)(res[1,i]^res[4,i]+ ((res[2,i]^res[4,i])-(res[1,i]^res[4,i]) )*((1-exp(-res[3,i]*(se-t1)))/ (1-exp(-res[3,i]*(t2-t1)))))^(1/res[4,i])
+        mod=list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17)
         se=seq(min(data[,1]),max(data[,1]),by=0.01)
         i=1:(ncol(data)-1)
         pred=lapply(i,mod[[model]])
@@ -98,7 +103,11 @@ res=data.frame(lr);names(res)=colnames(data)[-1]
         ff11=function(se)(res[1,i]*se^res[2,i])*exp(-res[3,i]*se)
         ff12=function(se)res[1,i] + res[2,i] * (1 - exp(-res[3,i] * se))
         ff13=function(se)  (res[1,i]/(1+exp(2-4*res[3,i]*(se-res[5,i]))))+(res[2,i]/(1+exp(2-4*res[4,i]*(se-res[5,i]))))
-        mod2=list(ff1,ff2,ff3,ff4,ff5,ff6,ff7,ff8,ff9,ff10,ff11,ff12,ff13)
+        ff14=function(se)res[1,i]*(se^res[2,i])
+ 	ff15=function(se)res[1,i]+res[2,i]*se+res[3,i]*se^2+res[4,i]*se^3
+	ff16=function(se)res[1,i]/(1+res[2,i]*(exp(-res[3,i]*se)))^res[4,i]
+	ff17=function(se)(res[1,i]^res[4,i]+ ((res[2,i]^res[4,i])-(res[1,i]^res[4,i]) )*((1-exp(-res[3,i]*(se-t1)))/ (1-exp(-res[3,i]*(t2-t1)))))^(1/res[4,i])
+        mod2=list(ff1,ff2,ff3,ff4,ff5,ff6,ff7,ff8,ff9,ff10,ff11,ff12,ff13,ff14,ff15,ff16,ff17)
         i=1:(ncol(data)-1)
         
 
@@ -149,10 +158,20 @@ res=data.frame(lr);names(res)=colnames(data)[-1]
         cc4=4*c4
         e13 = substitute(y==frac(c1,1+e^(2-cc3*(x-c5)))+frac(c2,1+e^(2-cc4*(x-c5)))*"  " * R^2 * " = " * r2, list(c1 = c1, c2 = c2, 
                                                                                                                   cc3 = cc3, r2 = r2, cc4=cc4, c5=c5))
+ 	e14 = substitute(y==c1*{x^c2}*"  " * R^2 * " = " * r2, list(c1 = c1, c2 = c2, 
+                                                                     r2 = r2)) 
+        e15 = substitute(y == c1 * sin2 * c2 * x * sin3 * c3 * 
+                            x^2 *sin4 * c4 *  "  " * R^2 * " = " * r2, list(c1 = c1, c2 = c2, 
+                                                                c3 = c3,c4=c4, r2 = r2, sin2 = sin2, sin3 = sin3, sin4=sin4))
+
+ 	e16 = substitute(y==frac(c1,(1*sin2*c2*e^{-c3*x})^c4)*"  " * R^2 * " = " * r2, list(c1 = c1, c2 = c2, 
+                                                                                     sin2 = sin2, c3 = c3,c4=c4, r2 = r2))
+
+	e17 = substitute(y==c1^c4+(c2^c4-c1^c4)*bgroup("(",frac(1-e^-c3*(t-t1), 1-e^-c3*(t2-t1)),")")^frac(1,c4)*  "  " * R^2 * " = " * r2, list(c1 = c1, c2 = c2,c3 = c3,c4=c4, r2 = r2))
+                                                               
+         # demo(plotmath)
         
-        # demo(plotmath)
-        
-        ee=list(e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13)
+        ee=list(e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12,e13,e14, e15,e16, e17)
         
         eee=ee[[model]]
 

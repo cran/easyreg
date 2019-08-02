@@ -4,7 +4,7 @@ bl<-function (data, model=1, alpha=0.05, xlab = "Explanatory Variable", ylab = "
 data=na.omit(data);model=model; xlab = xlab; ylab=ylab;position = position; digits = digits;mean = mean
 sd=sd; legend = legend; lty=lty; col=col; pch=pch
 
-tm2=function(npar,xlin,ixx,res){
+tm2=function(npar,xlin,ixx,res, data){
 by=(xlin%*%data$y)
 par=ixx%*%by
 sqt=(t(par)%*%by)-((sum(data$y)^2)/length(data$y))
@@ -423,12 +423,20 @@ dl=fo[[1]]
 dp=fo[[2]]
 data=fo[[3]]
 
+dll=c(dl,dp)
+dpp=c(dp,dl)
+dl=dll
+dp=dpp
+
 fml=function(data){m=lm(y~x, data=data); r1=as.numeric(resid(m)); r=sum(r1^2);return(r)}
 fmp=function(data){m=lm(y~1, data=data); r1=as.numeric(resid(m)); r=sum(r1^2);return(r)}
 m1=lapply(dl, fml)
 m2=lapply(dp, fmp)
 om=1:length(m1)
 mr=data.frame(unlist(m1), unlist(m2));names(mr)=c("l","p") 
+
+
+
 s=rowSums(mr)
 mr=data.frame(mr,s, om)
 mr = mr[order(mr$s), ]
@@ -447,7 +455,10 @@ a=coef(m1)[[1]]
 b=coef(m1)[[2]]
 c=coef(m2)[[1]]
 knot=(c-a)/b
-bm=ifelse(knot>min(d2[,1]),bm2,bm)
+
+bm=ifelse(knot>min(data[,1]),bm,bm2)
+bm=ifelse(knot<max(data[,1]),bm,bm2)
+
 fml=function(data){m=lm(y~x, data=data); return(m)}
 fmp=function(data){m=lm(y~1, data=data); return(m)}
 m1=lapply(dl, fml)
@@ -461,7 +472,30 @@ a=coef(m1)[[1]]
 b=coef(m1)[[2]]
 c=coef(m2)[[1]]
 knot=(c-a)/b
-      cofs = c(a,b,c); names(cofs)=c("a","b","plateau")
+
+iii=if(min(d1[,1])<min(d2[,1]))1 else 2
+#1 linear plato   2 plato linear
+fi1=function(x){i=ifelse(x<median(data[,1]),bm,bm2);return(i)}
+fi2=function(x){i=ifelse(x>median(data[,1]),bm,bm2);return(i)}
+iiii=list(fi1,fi2)
+bm=iiii[[iii]](knot)
+
+
+fml=function(data){m=lm(y~x, data=data); return(m)}
+fmp=function(data){m=lm(y~1, data=data); return(m)}
+m1=lapply(dl, fml)
+m2=lapply(dp, fmp)
+m1=m1[[bm]]
+m2=m2[[bm]]
+datao=data
+d1=dl[[bm]]
+d2=dp[[bm]]
+a=coef(m1)[[1]]
+b=coef(m1)[[2]]
+c=coef(m2)[[1]]
+knot=(c-a)/b
+
+    cofs = c(a,b,c); names(cofs)=c("a","b","plateau")
     res = c(as.numeric(resid(m1)),as.numeric(resid(m2)))
     shap = shapiro.test(res)
     shap = shap$p.value
@@ -541,9 +575,23 @@ fc=fcon2(length(res)-3,cofs,sp)
     lisd=ifelse(sdd==TRUE,0,2)
     li=sum(li+lisd)
 ##############################################
+v1=min(d1[,1])
+v2=min(d2[,1])
+
+# v1 > v2 = plato/linear  ou v1 < v2 = linear/plato
+tt=ifelse(v1>v2,1,2)
 
 f1l=function(x)a+b*x
 f2p=function(x)c+0*x
+
+ll1=list(f2p, f1l)
+ll2=list(f1l, f2p)
+
+
+f1l=ll1[[tt]]
+f2p=ll2[[tt]]
+
+
     fp1 = function(datao) {
         plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
             data = datao, ylim = yl, xlim = xl,xlab = xlab,ylab=ylab, bty = "n", pch=pch,...)
@@ -608,189 +656,6 @@ li=ifelse(lie==7,6,li)
     return(resp)
 }
 
-
-bl3=function(data, xlab = "Explanatory Variable", ylab = "Response Variable", 
-    position = 1, digits = 6, mean = TRUE, sd=FALSE, legend = TRUE, lty=2, col="dark blue", pch=20,...)
-{
-sdd=sd       
-names(data) = c("x", "y")
-fo=fop(data)
-dl=fo[[1]]
-dp=fo[[2]]
-data=fo[[3]]
-   
-fmq=function(data){m=lm(y~x+I(x^2), data=data);r1=as.numeric(resid(m)); r=sum(r1^2);return(r)}
-fmp=function(data){m=lm(y~1, data=data); r1=as.numeric(resid(m)); r=sum(r1^2);return(r)}
-m1=lapply(dl, fmq)
-m2=lapply(dp, fmp)
-om=1:length(m1)
-mr=data.frame(unlist(m1), unlist(m2));names(mr)=c("l","p") 
-s=rowSums(mr)
-mr=data.frame(mr,s, om)
-mr = mr[order(mr$s), ]
-bm=mr[1,4]
-mq=function(data){m=lm(y~x+I(x^2), data=data); return(m)}
-m1=lapply(dl, mq)
-mp=function(data){m=lm(y~1, data=data); return(m)}
-m2=lapply(dp, mp)
-m1=m1[[bm]]
-m2=m2[[bm]]
-datao=data
-d1=dl[[bm]]
-d2=dp[[bm]]
-a=coef(m1)[[1]]
-b=coef(m1)[[2]]
-c=coef(m1)[[3]]
-k=coef(m2)[[1]]
-delta=sqrt((b^2)-(4*c*a)+(4*c*k))
-knot1=((-1*b)+delta)/(2*c)
-knot2=((-1*b)-delta)/(2*c)
-k1=abs(knot1)
-k2=abs(knot2)
-kk=c(k1,k2); knot=sort(kk)[1]
-    cofs = c(a,b,c,k); names(cofs)=c("a","b","c","plateau")
-    res = c(as.numeric(resid(m1)[1:length(d1$x)]),as.numeric(resid(m2)))
-    shap = shapiro.test(res)
-    shap = shap$p.value
-    sres = scale(res)
-    sres = sres[, 1]
-    vd=sum(res^2)/(length(res)-4)
-rp1=rep(1,length(d1$x))
-rp2=rep(0,length(d2$x))
-rp3=d1$x
-rp4=rep(0,length(d2$x))
-rp5=d1$x^2
-rp6=rep(0,length(d2$x))
-rp7=rep(0,length(d1$x))
-rp8=rep(1,length(d2$x))
-rr=c(rp1,rp2,rp3,rp4,rp5,rp6,rp7,rp8)
-x=matrix(rr, ncol=4)
-xlin=t(x)
-xx=xlin%*%x
-ixx=solve(xx)
-vco=ixx*vd; sp=diag(vco)^0.5
-ta=a/sp[1];tb=b/sp[2]; tc=c/sp[3]; tk=k/sp[4]
-pa=pt(abs(ta),(length(res)-4), lower.tail = FALSE)
-pa=pa*2
-pb=pt(abs(tb),(length(res)-4), lower.tail = FALSE)
-pb=pb*2
-pc=pt(abs(tc),(length(res)-4), lower.tail = FALSE)
-pc=pc*2
-pk=pt(abs(tk),(length(res)-4), lower.tail = FALSE)
-pk=pk*2
-lll=c(pa,pb,pc, pk)
-names(lll)=c("a","b","c","plateau")
-sqt = sum((data$y-mean(data$y))^2)
-sqr=sqt-sum(res^2)
-r1 = sqr/sqt
-gl=length(res)-1
-p1 =(gl/((gl + 1)-(4))*(1-r1))
-r2 =1-p1
-pred=data$y-res
-vdc=sum(res^2)/(length(res))    
-sd=vdc^0.5 
-loglik=sum(log(dnorm(x=data$y, mean=pred, sd=sd)))
-kc=4 
-aic=-2*loglik+(2*(kc+1))
-bic=-2*loglik+(log(length(res))*(kc+1))
-x.plateau = knot
-y.plateau = k
-  tm=tmf(res,data,3)
-fc=fcon2(length(res)-4,cofs,sp)
-    resp = list(round(cofs, digits), round(lll, digits), knot,k,tm,fc, 
-        round(r1, digits), round(r2, digits), round(aic, digits), 
-        round(bic, digits), res, sres, round(shap, digits))
-    names(resp) = c("Coefficients", "p values for coefficients", "x plateau","y plateau", 
-        "Whole model test","Parameters, standard error and confidence intervals","R-squared", "Adjusted R-squared", "AIC", "BIC", "Residuals", 
-        "Standartized residuals", "P value (Shapiro-Wilk test for residuals)")
-    sin1 = ifelse(a > 0, "+", "")
-    sin2 = ifelse(b > 0, "+", "")
-    sin3 = ifelse(c > 0, "+", "")
-    r1 = round(r1, 2)
-    knot = round(knot, digits)
-    e5 = substitute(atop(y == a * sin2 * b * x* sin3 * c * x, y == k) * "  " * atop(x < knot, x >= knot) * "    " * 
-        R^2 * " = " * r1, list(a = a, b = b, c = c,k=k, r1 = r1, 
-        knot = knot, sin2 = sin2, sin3 = sin3))
-    t = list("top", "bottomright", "bottom", "bottomleft", "left", 
-        "topleft", "topright", "right", "center")
-    p = t[[position]]
-    mei = mean
-###########################################
-    datao = means(data)
-    dataoi = ifelse(mei == TRUE, 1, 2)
-    data=data.frame(x=data[,1], y=data[,2], sd=rep(0,length(data[,1])))
-    ldi = list(datao, data)
-    datao = ldi[[dataoi]]
-#################################################
-    li = ifelse(legend == TRUE, 1, 2)
-    lisd=ifelse(sdd==TRUE,0,2)
-    li=sum(li+lisd)
-##############################################
-f1l=function(x)a+b*x+c*x^2
-f2p=function(x)k+0*x
-    fp1 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-arrows(as.numeric(as.character(datao[, 1])),datao[, 2]-datao[, 3],as.numeric(as.character(datao[, 1])),datao[, 2]+datao[, 3], code=3,length=0.04, angle=90)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot, col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-            col = col, lty = lty,...)
-        legend(p, legend = e5, bty = "n", cex = 0.8)
-    }
-    fp2 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-arrows(as.numeric(as.character(datao[, 1])),datao[, 2]-datao[, 3],as.numeric(as.character(datao[, 1])),datao[, 2]+datao[, 3], code=3,length=0.04, angle=90)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot,  col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-             col = col, lty = lty,...)
-    }
-fp3 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot, col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-            col = col, lty = lty,...)
-        legend(p, legend = e5, bty = "n", cex = 0.8)
-    }
-    fp4 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot,  col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-             col = col, lty = lty,...)
-    }
-
-fp11 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot, col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-            col = col, lty = lty,...)
-        legend(p, legend = e5, bty = "n", cex = 0.8)
-    }
-fp22 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot, col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-            col = col, lty = lty,...)
-    }
-
-ll = list(fp1, fp2, fp3, fp4, fp11, fp22)
-li=ifelse(mean==TRUE, li, 5)
-le=ifelse(legend==TRUE, 1,2)
-lie=li+le
-li=ifelse(lie==7,6,li)
-    ll[[li]](datao)
-    return(resp)
-}
 
 bl1m=function (data, xlab = "Explanatory Variable", ylab = "Response Variable", 
     position = 1, digits = 6, mean = TRUE, sd=FALSE, legend = TRUE, lty=2, col="dark blue", pch=20,...)
@@ -968,6 +833,11 @@ dl=fo[[1]]
 dp=fo[[2]]
 data=fo[[3]]
 
+dll=c(dl,dp)
+dpp=c(dp,dl)
+dl=dll
+dp=dpp
+
 fml=function(data){m=lm(y~x+blocks, data=data, contrasts=list(blocks=contr.sum)); r1=as.numeric(resid(m)); r=sum(r1^2);return(r)}
 fmp=function(data){m=lm(y~1+blocks, data=data, contrasts=list(blocks=contr.sum)); r1=as.numeric(resid(m)); r=sum(r1^2);return(r)}
 m1=lapply(dl, fml)
@@ -979,6 +849,7 @@ mr=data.frame(mr,s, om)
 mr = mr[order(mr$s), ]
 bm=mr[1,4]
 bm2=mr[2,4]
+
 fml=function(data){m=lm(y~x+blocks, data=data, contrasts=list(blocks=contr.sum)); return(m)}
 fmp=function(data){m=lm(y~1+blocks, data=data, contrasts=list(blocks=contr.sum)); return(m)}
 m1=lapply(dl, fml)
@@ -992,7 +863,11 @@ a=coef(m1)[[1]]
 b=coef(m1)[[2]]
 c=coef(m2)[[1]]
 knot=(c-a)/b
-bm=ifelse(knot>min(d2[,1]),bm2,bm)
+
+################################
+bm=ifelse(knot>min(data[,1]),bm,bm2)
+bm=ifelse(knot<max(data[,1]),bm,bm2)
+
 fml=function(data){m=lm(y~x+blocks, data=data, contrasts=list(blocks=contr.sum)); return(m)}
 fmp=function(data){m=lm(y~1+blocks, data=data, contrasts=list(blocks=contr.sum)); return(m)}
 m1=lapply(dl, fml)
@@ -1006,6 +881,28 @@ a=coef(m1)[[1]]
 b=coef(m1)[[2]]
 c=coef(m2)[[1]]
 knot=(c-a)/b
+
+iii=if(min(as.numeric(d1[,1]))<min(as.numeric(d2[,1])))1 else 2
+#1 linear plato   2 plato linear
+fi1=function(x){i=ifelse(x<median(data[,1]),bm,bm2);return(i)}
+fi2=function(x){i=ifelse(x>median(data[,1]),bm,bm2);return(i)}
+iiii=list(fi1,fi2)
+bm=iiii[[iii]](knot)
+
+fml=function(data){m=lm(y~x+blocks, data=data, contrasts=list(blocks=contr.sum)); return(m)}
+fmp=function(data){m=lm(y~1+blocks, data=data, contrasts=list(blocks=contr.sum)); return(m)}
+m1=lapply(dl, fml)
+m2=lapply(dp, fmp)
+m1=m1[[bm]]
+m2=m2[[bm]]
+datao=data
+d1=dl[[bm]]
+d2=dp[[bm]]
+a=coef(m1)[[1]]
+b=coef(m1)[[2]]
+c=coef(m2)[[1]]
+knot=(c-a)/b
+
     cofs = c(a,b,c); names(cofs)=c("a","b","plateau")
     res = c(as.numeric(resid(m1)),as.numeric(resid(m2)))
     shap = shapiro.test(res)
@@ -1052,7 +949,7 @@ aic=-2*loglik+(2*(k+1))
 bic=-2*loglik+(log(length(res))*(k+1-nlevels(data$blocks)))
 x.plateau = knot
 y.plateau = c
-  tm=tm2(3, xlin,ixx,res)
+  tm=tm2(3, xlin,ixx,res, data)
 fc=fcon2((length(res)-(3+(nlevels(data$blocks)-1))),cofs,sp)
 
     resp = list(round(cofs, digits), round(lll, digits), knot,c,tm, 
@@ -1089,9 +986,23 @@ fc=fcon2((length(res)-(3+(nlevels(data$blocks)-1))),cofs,sp)
     lisd=ifelse(sdd==TRUE,0,2)
     li=sum(li+lisd)
 ##############################################
+v1=min(d1[,1])
+v2=min(d2[,1])
+
+# v1 > v2 = plato/linear  ou v1 < v2 = linear/plato
+tt=ifelse(v1>v2,1,2)
 
 f1l=function(x)a+b*x
 f2p=function(x)c+0*x
+
+ll1=list(f2p, f1l)
+ll2=list(f1l, f2p)
+
+
+f1l=ll1[[tt]]
+f2p=ll2[[tt]]
+
+
     fp1 = function(datao) {
         plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
             data = datao, ylim = yl, xlim = xl,xlab = xlab,ylab=ylab, bty = "n", pch=pch,...)
@@ -1158,192 +1069,9 @@ li=ifelse(lie==7,6,li)
 }
 
 
-bl3m=function(data, xlab = "Explanatory Variable", ylab = "Response Variable", 
-    position = 1, digits = 6, mean = TRUE, sd=FALSE, legend = TRUE, lty=2, col="dark blue", pch=20,...)
-{
-sdd=sd       
-names(data) = c("x", "blocks","y")
-data$blocks=as.factor(data$blocks)
-fo=fop(data)
-dl=fo[[1]]
-dp=fo[[2]]
-data=fo[[3]]
-   
-fmq=function(data){m=lm(y~x+I(x^2)+blocks, data=data, contrasts=list(blocks=contr.sum));r1=as.numeric(resid(m)); r=sum(r1^2);return(r)}
-fmp=function(data){m=lm(y~1+blocks, data=data,contrasts=list(blocks=contr.sum)); r1=as.numeric(resid(m)); r=sum(r1^2);return(r)}
-m1=lapply(dl, fmq)
-m2=lapply(dp, fmp)
-om=1:length(m1)
-mr=data.frame(unlist(m1), unlist(m2));names(mr)=c("l","p") 
-s=rowSums(mr)
-mr=data.frame(mr,s, om)
-mr = mr[order(mr$s), ]
-bm=mr[1,4]
-mq=function(data){m=lm(y~x+I(x^2)+blocks, data=data, contrasts=list(blocks=contr.sum)); return(m)}
-m1=lapply(dl, mq)
-mp=function(data){m=lm(y~1+blocks, data=data, contrasts=list(blocks=contr.sum)); return(m)}
-m2=lapply(dp, mp)
-m1=m1[[bm]]
-m2=m2[[bm]]
-datao=data
-d1=dl[[bm]]
-d2=dp[[bm]]
-a=coef(m1)[[1]]
-b=coef(m1)[[2]]
-c=coef(m1)[[3]]
-k=coef(m2)[[1]]
-delta=sqrt((b^2)-(4*c*a)+(4*c*k))
-knot1=((-1*b)+delta)/(2*c)
-knot2=((-1*b)-delta)/(2*c)
-k1=abs(knot1)
-k2=abs(knot2)
-kk=c(k1,k2); knot=sort(kk)[1]
-    cofs = c(a,b,c,k); names(cofs)=c("a","b","c","plateau")
-    res = c(as.numeric(resid(m1)[1:length(d1$x)]),as.numeric(resid(m2)))
-    shap = shapiro.test(res)
-    shap = shap$p.value
-    sres = scale(res)
-    sres = sres[, 1]
-    glb=nlevels(data$blocks)-1
-    vd=sum(res^2)/(length(res)-4-glb)
-
-ma1=model.matrix(m1)
-maa1=cbind(ma1[,c(1,2,3)], c1=rep(0, length(ma1[,1])), ma1[,-c(1,2,3)])
-ma2=model.matrix(m2)
-c2=rep(0,length(ma2[,1])*3);c2=matrix(c2,ncol=3)
-maa2=cbind(c2,ma2)
-
-x=rbind(maa1,maa2)
-xlin=t(x)
-xx=xlin%*%x
-ixx=solve(xx)
-vco=ixx*vd; sp=diag(vco)^0.5
-ta=a/sp[1];tb=b/sp[2]; tc=c/sp[3]; tk=k/sp[4]
-pa=pt(abs(ta),(length(res)-4-glb), lower.tail = FALSE)
-pa=pa*2
-pb=pt(abs(tb),(length(res)-4-glb), lower.tail = FALSE)
-pb=pb*2
-pc=pt(abs(tc),(length(res)-4-glb), lower.tail = FALSE)
-pc=pc*2
-pk=pt(abs(tk),(length(res)-4-glb), lower.tail = FALSE)
-pk=pk*2
-lll=c(pa,pb,pc, pk)
-names(lll)=c("a","b","c","plateau")
-sqt = sum((data$y-mean(data$y))^2)
-sqr=sqt-sum(res^2)
-r1 = sqr/sqt
-gl=length(res)-1
-p1 =(gl/((gl + 1)-(4))*(1-r1))
-r2 =1-p1
-pred=data$y-res
-vdc=sum(res^2)/(length(res))    
-sd=vdc^0.5 
-loglik=sum(log(dnorm(x=data$y, mean=pred, sd=sd)))
-kc=4
-aic=-2*loglik+(2*(kc+1))
-bic=-2*loglik+(log(length(res)))*(kc+1-nlevels(data$blocks))
-x.plateau = knot
-y.plateau = k
-  tm=tm2(4, xlin,ixx,res)
-fc=fcon2(length(res)-4,cofs,sp[c(1,2,3,4)])
-    resp = list(round(cofs, digits), round(lll, digits), knot,k,tm,fc, 
-        round(r1, digits), round(r2, digits), round(aic, digits), 
-        round(bic, digits), res, sres, round(shap, digits))
-    names(resp) = c("Coefficients", "p values for coefficients", "x plateau","y plateau", 
-        "Whole model test","Parameters, standard error and confidence intervals","R-squared", "Adjusted R-squared", "AIC", "BIC", "Residuals", 
-        "Standartized residuals", "P value (Shapiro-Wilk test for residuals)")
-    sin1 = ifelse(a > 0, "+", "")
-    sin2 = ifelse(b > 0, "+", "")
-    sin3 = ifelse(c > 0, "+", "")
-    r1 = round(r1, 2)
-    knot = round(knot, digits)
-    e5 = substitute(atop(y == a * sin2 * b * x* sin3 * c * x, y == k) * "  " * atop(x < knot, x >= knot) * "    " * 
-        R^2 * " = " * r1, list(a = a, b = b, c = c,k=k, r1 = r1, 
-        knot = knot, sin2 = sin2, sin3 = sin3))
-    t = list("top", "bottomright", "bottom", "bottomleft", "left", 
-        "topleft", "topright", "right", "center")
-    p = t[[position]]
-    mei = mean
-###########################################
-   datao = means(data)
-    dataoi = ifelse(mei == TRUE, 1, 2)
-    data=data.frame(x=data[,1], y=if(ncol(data)==2)data[,2] else data[,3], sd=rep(0,length(data[,1])))
-    ldi = list(datao, data)
-    datao = ldi[[dataoi]]
-#################################################
-    li = ifelse(legend == TRUE, 1, 2)
-    lisd=ifelse(sdd==TRUE,0,2)
-    li=sum(li+lisd)
-##############################################
-f1l=function(x)a+b*x+c*x^2
-f2p=function(x)k+0*x
-    fp1 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-arrows(as.numeric(as.character(datao[, 1])),datao[, 2]-datao[, 3],as.numeric(as.character(datao[, 1])),datao[, 2]+datao[, 3], code=3,length=0.04, angle=90)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot, col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-            col = col, lty = lty,...)
-        legend(p, legend = e5, bty = "n", cex = 0.8)
-    }
-    fp2 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-arrows(as.numeric(as.character(datao[, 1])),datao[, 2]-datao[, 3],as.numeric(as.character(datao[, 1])),datao[, 2]+datao[, 3], code=3,length=0.04, angle=90)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot,  col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-             col = col, lty = lty,...)
-    }
-fp3 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot, col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-            col = col, lty = lty,...)
-        legend(p, legend = e5, bty = "n", cex = 0.8)
-    }
-    fp4 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot,  col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-             col = col, lty = lty,...)
-    }
-
-fp11 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot, col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-            col = col, lty = lty,...)
-        legend(p, legend = e5, bty = "n", cex = 0.8)
-    }
-fp22 = function(datao) {
-        plot(datao[, 2] ~ as.numeric(as.character(datao[, 1])), 
-            data = datao, ylim = yl, xlim = xl, ylab = ylab, xlab = xlab, bty = "n", pch=pch,...)
-        curve(f1l, add = TRUE, from = min(data$x, na.rm = TRUE), 
-            to = knot, col = col, lty = lty,...)
-        curve(f2p, add = TRUE, from = knot, to = max(data$x, na.rm = TRUE), 
-            col = col, lty = lty,...)
-    }
-
-ll = list(fp1, fp2, fp3, fp4, fp11, fp22)
-li=ifelse(mean==TRUE, li, 5)
-le=ifelse(legend==TRUE, 1,2)
-lie=li+le
-li=ifelse(lie==7,6,li)
-    ll[[li]](datao)
-    return(resp)
-}
 
 
-
-ggg=list(bl1,bl2,bl3,bl1m,bl2m,bl3m)
+ggg=list(bl1,bl2,bl1m,bl2m)
 ggg[[model]](data, xlab = xlab, ylab = ylab, 
     position = position, digits = digits, mean = mean, sd=sd, legend = legend, lty=lty, col=col, pch=pch,...)
 

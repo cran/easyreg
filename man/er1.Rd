@@ -9,7 +9,7 @@ The function performs analysis of some linear and nonlinear models
 }
 \usage{
 er1(data, model = 1, start = c(a = 1, b = 1, c = 1, d = 1, e = 1), 
-mixed=FALSE, digits=6)
+mixed=FALSE, digits=6, alpha=0.05)
 }
 
 \arguments{
@@ -47,6 +47,13 @@ define the model
 
 13 = "y~(a/(1+exp(2-4*c*(x-e))))+(b/(1+exp(2-4*d*(x-e))))" logistic bi-compartmental
 
+14 = "y~a*(x^b)" exponential (allometric model)
+
+15 = "y~a+b*x+c*x^2+d*x^3" cubic
+
+16 = "y~a/(1+b*(exp(-c*x)))^d" richards
+
+17 = "y~(a^d+ ((b^d)-(a^d) )*((1-exp(-c*(x-t1)))/ (1-exp(-c*(t2-t1)))))^(1/d)" schnute
 
 }
   \item{start}{
@@ -61,6 +68,10 @@ FALSE/defalt for fixed model or TRUE for mixed model
 number of digits in results (default=6)
 }
 
+\item{alpha}{
+significant level of the confident intervals for parameters in the models
+}
+
 }
 
 \value{
@@ -68,6 +79,9 @@ Returns coefficients of the models, t test for coefficients, R squared, adjusted
 }
 \references{
 KAPS, M. and LAMBERSON, W. R. Biostatistics for Animal Science: an introductory text. 2nd Edition. CABI Publishing, Wallingford, Oxfordshire, UK, 2009. 504p.
+
+TERRANCE J. QUINN II and RICHARD B. DERISO. Quantitative Fish Dynamics,
+New York, Oxford, Oxford University Press, 1999. 
 }
 \author{
 Emmanuel Arnhold <emmanuelarnhold@yahoo.com.br>
@@ -116,6 +130,15 @@ er1(data1, model=9, start=c(600,4,0.05))
 
 # gompertz
 er1(data1, model=10, start=c(600,4,0.05))
+
+# richards
+er1(data1, model=16, start=c(600,2,0.05,1.4))
+
+# allometric
+er1(data1, model=14)
+
+# cubic
+er1(data1, model=15)
 
 
 
@@ -175,6 +198,22 @@ gas=c(0.002,3.8,8,14.5,16,16.5,17,17.4,17.9,18.1,18.8,19,19.2,19.3)
 data6=data.frame(time,gas)
 
 er1(data6, model=13, start=c(19,4,0.025,0.004,5))
+
+# Schnute model
+#pacific halibut weight-age data of females (Terrance and Richard, 1999)
+ 
+age=c(4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
+19,20,21,22,23,24,28)
+weight=c(1.7,2,3.9, 4.2,6.4,7.6,10.9,14.9,18.2,21.6,
+25.4,28.8,30.9,	35.6,37.9,34.7,44.8,52.6,49.1,56.7,58.6,54.1)
+
+halibut=data.frame(age,weight)
+
+
+t1=min(halibut[,2])
+t2=max(halibut[,2])
+
+er1(halibut,model=17, start=c(a=t1,b=t2,c=0.15,d=-0.50))
 
 
 }
