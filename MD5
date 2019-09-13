@@ -1,6 +1,6 @@
-c67d2eb5650364a5cc2bcb4346678b68 *DESCRIPTION
+f8eb1dd92f8e6bf54233acbcf8de0b08 *DESCRIPTION
 27514bec992834c9045f9f733d993fba *NAMESPACE
-8dc4ad27689786dd60572c63b12d53b7 *R/bl.R
+918d0d3893159e4980c3d17382b0eecb *R/bl.R
 66d18ee49a233ec2adbcfa8aa229ca3e *R/er1.R
 4b22c6be6219a6185796fc21afda67d7 *R/er2.R
 a03e42f564dc6a97182af1c1220229f6 *R/regplot.R
@@ -17,7 +17,7 @@ cba5f41daa062afa04954b123732aa56 *inst/CITATION
 0356ac6b5014d5cde3ede87bcdaee9ae *man/data3.Rd
 08bf0ae8da5346de3c51cfb7e50e9ff8 *man/data4.Rd
 0249efaa9f87e12415ce505a1497fd2b *man/data5.Rd
-b259c666fba6a437072785a911028ec7 *man/easyreg-package.Rd
+d9fd24650ff1e4d9c926c081624b6077 *man/easyreg-package.Rd
 dc09020e22c8ed29cad6a36bc93e4fd2 *man/er1.Rd
 ca227b0495a6048b590f8366c6cb0f6f *man/er2.Rd
 b118f101be9329e2004bab5558e857d0 *man/regplot.Rd

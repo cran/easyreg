@@ -183,6 +183,9 @@ data=data.frame(fac=as.factor(data[,1]),data)
 l=1:nlevels(data[,1])
 fs1=function(i){s=subset(data, data[,1]==data[,1][i]); return(s)}
 s=lapply(l, fs1)
+# programacao acima nao e boa usar esta que segue
+s=split(data, data$fac)
+
 # retirar a coluna do fator
 ifac=1:length(s)
 ffac=function(i){return(s[[i]][,-1])}
@@ -221,6 +224,8 @@ data=data.frame(fac=as.factor(data[,1]),data)
 l=1:nlevels(data$fac)
 fs=function(i){s=subset(data, data[,1]==data$fac[i]); return(s)}
 s=lapply(l, fs)
+# programacao acima nao e boa usar esta que segue
+s=split(data, data$fac)
 # retirar a coluna do fator
 ifac=1:length(s)
 ffac=function(i){return(s[[i]][,-1])}

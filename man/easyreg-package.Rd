@@ -13,8 +13,8 @@ Performs analysis of regression in simple designs with quantitative treatments, 
 \tabular{ll}{
 Package: \tab easyreg\cr
 Type: \tab Package\cr
-Version: \tab 3.0\cr
-Date: \tab 2019-07-07\cr
+Version: \tab 4.0\cr
+Date: \tab 2019-10-13\cr
 License: \tab GPL (>= 2)\cr
 }
 }
@@ -67,6 +67,7 @@ regplot(data2, model=5, start=c(25,6,10,20), digits=2)
 
 # in other function
 bl(data2)
+
 
 
 }
